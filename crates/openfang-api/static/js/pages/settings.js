@@ -20,6 +20,7 @@ function settingsPage() {
     customModelContext: 128000,
     customModelMaxOutput: 8192,
     customModelStatus: '',
+    deletingModelId: null,
     providerKeyInputs: {},
     providerUrlInputs: {},
     providerUrlSaving: {},
@@ -256,6 +257,25 @@ function settingsPage() {
       } catch(e) {
         this.customModelStatus = 'Error: ' + (e.message || 'Failed');
       }
+    },
+
+    async deleteCustomModel(modelId) {
+      OpenFangToast.confirm(
+        'Delete Custom Model',
+        'Are you sure you want to delete "' + modelId + '"? This action cannot be undone.',
+        async () => {
+          this.deletingModelId = modelId;
+          try {
+            await OpenFangAPI.delete('/api/models/custom/' + encodeURIComponent(modelId));
+            OpenFangToast.success('Model "' + modelId + '" deleted');
+            await this.loadModels();
+          } catch(e) {
+            OpenFangToast.error('Failed to delete model: ' + (e.message || 'Unknown error'));
+          } finally {
+            this.deletingModelId = null;
+          }
+        }
+      );
     },
 
     async loadConfigSchema() {
